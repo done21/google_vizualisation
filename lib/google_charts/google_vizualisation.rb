@@ -23,17 +23,7 @@ module GoogleCharts
     end
   
     def format_options(options)
-      unless options.empty?
-        option_string = ", {"
-        options.each do |option, value|
-          opt = value.kind_of?(String) ? "#{value.dump}" : value
-          option_string << "#{option}: #{opt},"
-        end
-        option_string =  option_string.chop + "}"
-      else
-        option_string = "{}"
-      end
-      return option_string
+      options.to_json
     end
   
     # name must be unique
@@ -54,8 +44,9 @@ module GoogleCharts
     def render_drawChart()
       @value = <<-eos
         <script type="text/javascript"> 
-        google.load("visualization", "1", {packages:["#{@viz_type}"]});
-        google.setOnLoadCallback(drawChart);
+        (function(){
+          google.load("visualization", "1", {packages:["#{@viz_type}"]});
+          google.setOnLoadCallback(drawChart);
       eos
 
       @value << <<-eos
@@ -95,8 +86,9 @@ module GoogleCharts
       end
       @value << <<-eos
           var chart = new google.visualization.#{@class_name}(document.getElementById('#{@uid}'));
-          chart.draw(data#{format_options(@options)});
+          chart.draw(data, #{format_options(@options)});
         }
+      })();
       </script>
       eos
     end
